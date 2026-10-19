@@ -36,12 +36,20 @@ namespace eval ::solar {
 proc	set-init-time {
 		{time now}
 		{planet earth}
-		{loc {+40.11206925115134 -88.22634304261705}}
+		args
 	}\
 {
 	variable p
 
-	lassign $loc	lat lon
+
+	if {[llength $args] == 0} {
+		lassign {+40.11206925115134 -88.22634304261705} lat lon
+	} elseif {[llength $args] == 1} {
+		lassign $args	lon 
+		set lat	0.0
+	} {
+		lassign $args	lat lon
+	}
 
 	array unset p
 	array set p	[params $planet [clock scan $time]]
