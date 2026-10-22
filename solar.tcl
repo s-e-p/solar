@@ -9,10 +9,10 @@ namespace eval ::tcl::mathfunc {
 const 2pi	[expr 8 * atan(1)]
 const deg	360.0
 
-proc degree d {
+proc degree {d {m 0} {s 0}} {
 	variable deg
 
-	expr {$d / $deg}
+	expr {(($d + $m / 60) + $s / 60) / $deg}
 }
 
 # convert radians to cycles
@@ -42,6 +42,14 @@ proc deg c {
 	} {
 		expr {$d + 0.0}
 	}
+}
+
+# convert cycle to degrees within range of -180 to +180
+#
+proc cyc c {
+	variable deg
+
+	expr {wrap($c) * $deg}
 }
 
 # convert cycle to radians with no adjustments
