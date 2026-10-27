@@ -3,11 +3,6 @@
 # ---------------------------------------------------------------------------
 namespace eval ::solar {
 
-# convert from CIO frame to Equinox - this is getting silly
-# W from ERA polynomial which uses a different frame
-
-	const CIO	[expr degree(7.6884588)]
-
 	variable PARAMS
 	array set PARAMS [dict create\
 	version	{2024-03-15 IERS-2006}\
@@ -22,7 +17,7 @@ namespace eval ::solar {
 			]\
 		obl	[list\
 				[expr degree(23.4392911)]\
-				[expr arcsec(-46.83676)]
+				[expr degree(0, 0, -46.83676)]
 			]\
 		M0	[list\
 				[expr degree(357.52911)]\
@@ -33,14 +28,14 @@ namespace eval ::solar {
 				[expr degree(1.71946)]
 			]\
 		W	[list\
-				[expr 0.7790572732640 + $CIO]\
+				[expr 0.7790572732640]\
 				[expr 1.00273781191135448 * $JCentury]\
-				[expr arcsec(-0.014506)]\
-				[expr arcsec(-461215.71764)]\
-				[expr arcsec(-139.31422)]\
-				[expr arcsec(0.04414)]\
-				[expr arcsec(-0.000101)]\
-				[expr arcsec(-0.00000003)]
+				[expr -degree(0, 0, 0.014506)]\
+				[expr -degree(128, 0, 55.71764)]\
+				[expr -degree(0, 0, 139.31422)]\
+				[expr  degree(0, 0, 0.04414)]\
+				[expr -degree(0, 0, 0.000101)]\
+				[expr -degree(0, 0, 0.00000003)]
 			]\
 		hor	[expr degree(-0.8333)]
 	]\
