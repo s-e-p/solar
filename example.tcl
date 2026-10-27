@@ -20,7 +20,7 @@ apply {{} {
 	set T	[expr {$U - $p(epoch)}]
 
 	puts [format {orbit: %3.9f  SSL: %3.9f}\
-		[expr {[orbit-position $T] * 360}]\
+		[expr {radian([orbit-position $T]) * 360}]\
 		[expr {[sun-position $T] * 360}]
 	]
 
