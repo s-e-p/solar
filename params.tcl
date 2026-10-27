@@ -33,32 +33,27 @@ namespace eval ::solar {
 	const Julian	2451545.0
 	const JCentury	36525.0
 
+# load the parameter array
+# establish set location
+# set initial bracket
+#
+
 proc	set-init-time {
-		{time now}
-		{planet earth}
-		args
-	}\
-{
-	variable p
-
-
-	if {[llength $args] == 0} {
-		lassign {+40.11206925115134 -88.22634304261705} lat lon
-	} elseif {[llength $args] == 1} {
-		lassign $args	lon 
-		set lat	0.0
+		{time	now}
+		{lat	+40.11206925115134}
+		{lon	-88.22634304261705}
+		{planet	earth}
 	} {
-		lassign $args	lat lon
-	}
+
+	variable p
 
 	array unset p
 	array set p	[params $planet [clock scan $time]]
 
-	set p(lat)	[expr {degree($lat)}]
-	set p(lon)	[expr {degree($lon)}]
+	set p(noon)	0.0
+	set p(rate)	$p(solar)
 
-	lassign	[get-time $p(lon) [sun-position 0] 0 $p(solar)] p(noon) p(rate)
-	set-time 0
+	set-loc	[expr {degree($lat)}] [expr {degree($lon)}]
 }
 
 #
