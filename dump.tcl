@@ -76,7 +76,7 @@ proc show-loc {lat lon} {
 	set ddd	[expr {round(abs($lon * $round * 360.0)) / $round}]
 	set mm	[expr {fmod($ddd, 1.0) * 60.0}]
 	set ss	[expr {fmod($mm,  1.0) * 60.0}]
-	set dir	[expr {$ddd == 0 ? " " : $lon < 0 ? "W" : "E"}]
+	set dir	[expr {$ddd == 0 ? " " : $lon > 0 ? "W" : "E"}]
 	set ddd	[expr {int($ddd)}]
 	set mm	[expr {int($mm)}]
 	set lon	[format {%3d° %02d' %05.2f" %s} $ddd $mm $ss $dir]

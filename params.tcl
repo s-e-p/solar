@@ -51,6 +51,7 @@ proc	set-init-time {
 	array set p	[params $planet [clock scan $time]]
 
 	set p(noon)	0.0
+	set p(lon)	[sun-position $p(noon)]
 	set p(rate)	$p(solar)
 
 	set-loc	[expr {degree($lat)}] [expr {degree($lon)}]
