@@ -22,6 +22,15 @@ proc show-date-time v {
 		-timezone [get-tz] -format {%Y-%m-%d %H:%M:%S %z}
 }
 
+#value is a UTC time, display as solar time
+proc show-solar v {
+	variable p
+
+	clock format [expr {round([solar-time $v] * $p(day))}]\
+		-format {%Y-%m-%d %H:%M:%S}\
+		-timezone +0000
+}
+
 # value is a UTC offset from epoch, display as UTC date/time
 proc show-delta delta {
 	variable p

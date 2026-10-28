@@ -44,27 +44,24 @@ proc set-loc {lat lon} {
 	set p(rate)	[expr {($p(next) - $p(prev))}]
 }
 
-# get the solar time and day: solar days * 86400 + solar time (0..86399)
+# get the solar day value
+# solar days + fractional solar time shifted to [0..1)
 #
 proc solar-time U {
 	variable p
 
 	set S	[expr {[get-solar $U] + 0.5}]
-	set D	[get-utc 0.0]
-	expr	{round((int($D / $p(solar)) + $S) * $p(day))}
+	set D	[expr {int([get-utc 0.0] / $p(solar))}]
+	expr	{$D + $S}
 }
 
-# get the UTC time for a given solar time
+# get the UTC time for a given solar day value
 #
 proc utc-time solar {
 	variable p
 
-	set D	[expr {int($solar) / $p(day))}]
-	set S	[expr {wrap(fmod($solar, 1) - 0.5)}]
-
-	set D	[expr {int(($solar + $p(lon)) / $p(solar))}]
-	set S	[get-solar [{$D * $day}]]
-	expr	{round(($D + $S) * $p(day))}
+	set-time	[expr {(int($solar) + 0.5) * $p(solar) - $p(epoch)}]
+	get-utc		[expr {wrap($solar - 0.5)}]
 }
 
 # convert solar cycle C to UTC based on current bracket
@@ -82,10 +79,10 @@ proc get-utc S {
 
 	}
 
-	set rate [expr {$S < 0 ?\
-		($p(noon) - $p(prev)) : ($p(next) - $p(noon))}]
+	set rate [expr {2.0 * ($S < 0 ?\
+		$p(noon) - $p(prev) : $p(next) - $p(noon))}]
 
-	expr {round($p(epoch) + $p(noon) + $S * $rate * 2.0)}
+	expr {round($p(epoch) + $p(noon) + $S * $rate)}
 }
 
 # convert UTC U to solar cycle - move bracket if necessary
@@ -99,7 +96,10 @@ proc get-solar U {
 		set-time $T
 	}
 
-	expr {($T - $p(noon)) / ($T < $p(noon) ? $p(prev) : $p(next))}
+	set rate [expr {2.0 * ($T < $p(noon) ?\
+		$p(noon) - $p(prev) : $p(next) - $p(noon))}]
+
+	expr {($T - $p(noon)) / $rate}
 }
 
 # get +hhmm style timezone based on current longitude
