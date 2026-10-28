@@ -1,7 +1,18 @@
 # ---------------------------------------------------------------------------
 # Earth/Mars orbital parameter - IERS-2006
 # ---------------------------------------------------------------------------
+# anomalistic     31558432.5
+# if used for Kepler solution, perihelion longitude would also need to be
+# advanced linearly - without that, they almost cancel out, so no problems
+# not an issue unless looking at times long after or before the table
+# initialization date
+# W coefficients and corrections
+
 namespace eval ::solar {
+	# correction to W
+	const Woff	[expr {degree(0,0,.014506)}]
+	# correction to W per JCentury
+	const Wrate	[expr {degree(0,0,4612.156534)}]
 
 	variable PARAMS
 	array set PARAMS [dict create\
@@ -27,15 +38,14 @@ namespace eval ::solar {
 				[expr degree(282.93735)]\
 				[expr degree(1.71946)]
 			]\
-		W	[list\
-				[expr 0.7790572732640]\
-				[expr 1.00273781191135448 * $JCentury]\
-				[expr -degree(0, 0, 0.014506)]\
-				[expr -degree(128, 0, 55.71764)]\
-				[expr -degree(0, 0, 139.31422)]\
-				[expr  degree(0, 0, 0.04414)]\
-				[expr -degree(0, 0, 0.000101)]\
-				[expr -degree(0, 0, 0.00000003)]
+		W       [list\
+				[expr {0.7790572732640 + $Woff}]\
+				[expr {1.00273781191135448 * $JCentury\
+					+ $Wrate}]\
+				[expr degree(0,0,+1.3915817)]\
+				[expr degree(0,0,-0.00000044)]\
+				[expr degree(0,0,-0.000029956)]\
+				[expr degree(0,0,-0.0000000368)]\
 			]\
 		hor	[expr degree(-0.8333)]
 	]\

@@ -76,10 +76,12 @@ proc params {planet time} {
 	set p(version)	$PARAMS(version)
 
 # get offset from table epoch in TT from UTC seconds
+# Tc is Julian centuries (based on TT)
+# TUc is Julian centuries (based on UT1 - approximated by UTC - used for W)
 
 	set epoch	[expr {$p(epoch) - ($TAI + $TT)}]
-	set days	[expr {($time - $epoch) / $day}]
-	set Tc		[expr {$days / $JCentury}]
+	set Tc		[expr {($time - $epoch) / ($day * $JCentury)}]
+	set TUc		[expr {($time - $p(epoch)) / ($day * $JCentury)}]
 
 # Update epoch and planet
 
@@ -107,7 +109,7 @@ proc params {planet time} {
 	poly p(obl)	$Tc
 	poly p(peri)	$Tc
 	poly p(M0)	$Tc
-	poly p(W)	$Tc
+	poly p(W)	$TUc
 
 # clean up M0, W (not strictly necessary)
 
