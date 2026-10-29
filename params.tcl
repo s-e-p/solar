@@ -48,7 +48,7 @@ proc set-init-time {
 	variable p
 
 	reset-time [clock scan $time]\
-		[expr {degree($lat)}] [expr {degree($lon)}]\
+		[expr {degree($lat)}] [expr {degree(-$lon)}]\
 		$planet
 }
 

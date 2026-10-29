@@ -31,7 +31,6 @@ proc set-time T {
 proc set-loc {lat lon} {
 	variable p
 
-	set lon	[expr {0 - $lon}]
 	set S	[expr {wrap($lon - $p(lon))}]
 	lassign	[get-time $S $p(noon) $p(lon) $p(solar)]	noon rate
 
