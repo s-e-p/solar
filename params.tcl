@@ -38,7 +38,7 @@ namespace eval ::solar {
 # set initial bracket
 #
 
-proc	set-init-time {
+proc set-init-time {
 		{time	now}
 		{lat	+40.11206925115134}
 		{lon	-88.22634304261705}
@@ -47,14 +47,22 @@ proc	set-init-time {
 
 	variable p
 
+	reset-time [clock scan $time]\
+		[expr {degree($lat)}] [expr {degree($lon)}]\
+		$planet
+}
+
+proc reset-time {time {lat 0.0} {lon 0.0} {planet earth}} {
+	variable p
+
 	array unset p
-	array set p	[params $planet [clock scan $time]]
+	array set p	[params $planet $time]
 
 	set p(noon)	0.0
 	set p(lon)	[sun-position $p(noon)]
 	set p(rate)	$p(solar)
 
-	set-loc	[expr {degree($lat)}] [expr {degree($lon)}]
+	set-loc	$lat $lon
 }
 
 #
