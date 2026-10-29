@@ -13,10 +13,11 @@ proc get-time {S noon lon rate} {
 		set T		[expr {$noon + $S * $rate}]
 		set ssl		[sun-position $T]
 		set delta	[expr {wrap($S + $lon - $ssl)}]
+		set adjust	[expr {$S - $delta}]
 
-		if {abs($delta * $rate) < 1e-2} break
+		if {abs($adjust * $rate) < 1e-6} break
 
-		set rate	[expr {($T - $noon) / ($S - $delta)}]
+		set rate	[expr {($T - $noon) / $adjust}]
 		set S		$delta
 		set noon	$T
 		set lon		$ssl
@@ -45,8 +46,6 @@ proc tilt T {
 	variable p
 
 	set angle	[expr {[orbit-position $T] + rad($p(peri))}]
-	set eps		[expr {rad($p(obl))}]
-
 	expr {radian(atan2(cos(rad($p(obl))) * sin($angle), cos($angle)))}
 }
 

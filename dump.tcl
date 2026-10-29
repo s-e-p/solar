@@ -24,9 +24,9 @@ proc show-date-time v {
 
 #value is a UTC time, display as solar time
 proc show-solar v {
-	variable p
+	variable day
 
-	clock format [expr {round([solar-time $v] * $p(day))}]\
+	clock format [expr {round([solar-time $v] * $day)}]\
 		-format {%Y-%m-%d %H:%M:%S}\
 		-timezone +0000
 }
