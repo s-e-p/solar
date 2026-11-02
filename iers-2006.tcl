@@ -1,7 +1,7 @@
 # ---------------------------------------------------------------------------
 # Earth/Mars orbital parameter - IERS-2006
 # ---------------------------------------------------------------------------
-# anomalistic     31558432.5
+# anomalistic	31558432.5
 # if used for Kepler solution, perihelion longitude would also need to be
 # advanced linearly - without that, they almost cancel out, so no problems
 # not an issue unless looking at times long after or before the table
@@ -37,7 +37,7 @@ namespace eval ::solar {
 				[expr degree(282.93735)]\
 				[expr degree(1.71946)]
 			]\
-		W       [list\
+		W	[list\
 				[expr {0.7790572732640 + $Woff}]\
 				[expr {1.00273781191135448 * $JCentury\
 					+ $Wrate}]\

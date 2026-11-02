@@ -11,10 +11,11 @@ package require solar
 
 apply {{} {
 	variable p
+	variable day
 
 	puts $p(version)
-	puts [format {%-6s %4.2f} $p(planet) [expr {$p(lon) * 360}]]
-	puts [clock format $p(epoch)]
+	puts [format {%-6s %s} $p(planet) [show-loc $p(lat) $p(lon)]]
+	puts [clock format $p(epoch) -timezone UTC]
 
 	set U	[clock seconds]
 	set T	[expr {$U - $p(epoch)}]
@@ -26,29 +27,26 @@ apply {{} {
 
 	set time [solar-time $U]
 
-	set hours	[expr {int($p(rate) / 3600)}]
-	set minutes	[expr {int(fmod(($p(rate) / 60), 60))}]
-	set seconds	[expr {fmod($p(rate), 60)}]
+	puts [format {current solar day: %s} [show-time $p(rate)]]
 
-	puts [format {current solar day: %.2d:%.2d:%06.3f}\
-		$hours\
-		$minutes\
-		$seconds
+	puts [format {solar day ratio: %1.8f} [expr {$p(rate) / $p(solar)}]]
+
+
+	set noon [expr {round($p(noon) + $p(epoch))}]
+
+	puts [clock format [expr {round($time * $day)}]\
+		-format {current solar time   %Y-%m-%d %I:%M:%S %P}\
+		-timezone +0000
 	]
 
-	puts [format {solar day ratio: %1.8g}\
-		[expr {$p(rate) / $p(solar)}]
-	]
+	puts "local solar noon    [clock format $noon]"
 
-	puts "current  UTC  time\
-		[clock format $U -timezone UTC]"
+	puts "noon (solar mean)  \
+		[clock format $noon -timezone [get-tz]]"
 
-	puts "current local time\
+	puts "current local time \
 		[clock format $U]"
 
-	puts "local solar noon   [clock format [get-utc 0]]"
-
-	puts "current solar time\
-		[clock format $time -gmt true\
-		-format {%Y-%m-%d %I:%M:%S %P}]"
+	puts "current  UTC  time \
+		[clock format $U -timezone UTC]"
 } ::solar}

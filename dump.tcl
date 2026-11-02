@@ -120,7 +120,6 @@ proc dump {} {
 		version	string
 		epoch	date
 		planet	string
-		day	time
 		orbit	days
 		solar	time
 		sidereal time

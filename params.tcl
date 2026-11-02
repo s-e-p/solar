@@ -34,7 +34,6 @@ namespace eval ::solar {
 	const JCentury	36525.0
 
 # load the parameter array
-# establish set location
 # set initial bracket
 #
 
@@ -45,24 +44,15 @@ proc set-init-time {
 		{planet	earth}
 	} {
 
-	variable p
-
-	reset-time [clock scan $time]\
-		[expr {degree($lat)}] [expr {degree(-$lon)}]\
-		$planet
+	reset-time	[clock scan $time] $planet
+	set-bracket	0 [expr {degree($lat)}] [expr {-degree($lon)}]\
 }
 
-proc reset-time {time {lat 0.0} {lon 0.0} {planet earth}} {
+proc reset-time {utc {planet earth}} {
 	variable p
 
 	array unset p
-	array set p	[params $planet $time]
-
-	set p(noon)	0.0
-	set p(lon)	[sun-position $p(noon)]
-	set p(rate)	$p(solar)
-
-	set-loc	$lat $lon
+	array set p	[params $planet $utc]
 }
 
 #

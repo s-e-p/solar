@@ -18,9 +18,9 @@ proc degree {d {m 0} {s 0}} {
 # convert radians to cycles
 
 proc radian r {
-        variable 2pi
+	variable 2pi
 
-        expr {$r / $2pi}
+	expr {$r / $2pi}
 }
 
 # convert cycle to degrees and normalize to [0 .. 360)
