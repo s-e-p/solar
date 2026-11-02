@@ -1,15 +1,10 @@
-Solar time calculations for calculating "sundial time" in Tcl 9.0
+Solar time calculations for calculating "local solar time" in Tcl 9.0
 
-This library calculates the "solar time" for a given location and UTC time.
-When interpreted as a UTC time it will have the same day as the "natural"
-timezone for your location, and the time will be exactly 12 hours from
-midnight to noon, and noon to midnight.  The time will update as you move
-around, and the ratio of "solar seconds" to UTC seconds will change only
-at noon and midnight.
-
-There may well be some errors in this code, but the daily noon time seems to
-be within about a minute of several reliable sources.  Corrections to the
-orbital parameter tables are welcome.
+This library calculates the solar time for a given location and UTC time.
+When interpreted as a UTC time it will have the same day as the natural
+timezone for your longitude, but the time will be exactly 12 hours from
+midnight to noon, and noon to midnight (by adjusting the length of the
+second to match).  The time will update as the location changes.
 
 -----
 
@@ -21,17 +16,17 @@ local noon (the instant when the sun is highest in the sky, which is
 what a sun dial always shows).
 
 It worked fine up until they invented time zones so that railroad
-timetables could be useful and the telegraph allowed communicating with
-someone where the sun was in a different relative position.  Then we
+timetables could be useful, and because the telegraph allowed communicating
+with someone where the sun was in a different relative position.  Then we
 became slaves to the clock, and everyone had to go to school at 7:30
 and leave at 3:30 and businesses were open 9 to 5 and who cares if the
 clocks were all changed you have to follow the schedule!
 
-So yeah, get rid of DST, don't make it be always, and if 8am is before
+So, get rid of DST, don't make it be always DST, and if 8am is before
 sunrise, maybe don't have school start before 8am!
 
 Without the supercomputers everyone walks around with, this would be
-difficult, but now that almost everyone has a phone, which has GPS,
+difficult to manage, but now that almost everyone has a phone with GPS,
 you can calculate local noon trivially.  No more one hour jumps each
 time you cross a time zone line, the time zone changes as you move.
 Your friend 5 miles away on the other side of the line is only 20 seconds
