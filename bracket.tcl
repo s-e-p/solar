@@ -99,6 +99,7 @@ proc day-info {} {
 	set t(loc)	[show-loc $p(lat) $p(lon)]
 	set t(tz)	[get-tz]
 	set t(noon)	[expr {round($p(noon) + $p(epoch))}]
+	set t(day)	[expr {int(($p(noon) + $p(epoch)) / $p(solar))}]
 	set t(rate)	$p(rate)
 	set t(seconds)	$day
 
@@ -170,8 +171,6 @@ proc time-info utc {
 
 	set t(solar)	$solar
 	set t(utc)	$utc
-	set t(day)	[expr {int($solar)}]
-
 	set time	[expr {round($solar * $t(seconds))}]
 
 	set t(date)	[clock format $time\

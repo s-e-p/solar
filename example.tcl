@@ -27,13 +27,11 @@ apply {{{lat	+40.11206925115134}
 		[expr {[sun-position 0] * 360}]
 	]
 
-
 	puts [format {current solar day: %s}\
 		[show-time $t(rate)]
 	]
 
 	puts [format {solar day ratio: %1.8f} [expr {$t(rate) / $t(msd)}]]
-
 
 	puts "current solar time   $t(date) $t(time)"
 	puts "local solar noon    [clock format $t(noon)]"

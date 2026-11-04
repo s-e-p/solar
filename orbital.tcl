@@ -26,8 +26,6 @@ proc get-time {S noon lon rate} {
 	list	$T $rate
 }
 
-# calculate the sun's relative location at UTC delta (from epoch)
-# return the Sub-Solar Location
 #
 # calculate the sun's location at UTC delta (from epoch)
 # return the Sub-Solar Location in cycles
