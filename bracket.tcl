@@ -33,23 +33,28 @@ proc set-bracket {T lat lon} {
 	lassign [get-time -0.5 $noon $lon $rate]	prev
 	lassign [get-time +0.5 $noon $lon $rate]	next
 
-	set p(rate)	[expr {$next - $prev}]
+	set p(lat)	$lat
+	set p(lon)	$lon
 
 	set p(noon)	$noon
 	set p(next)	$next
 	set p(prev)	$prev
 
-	set p(lat)	$lat
-	set p(lon)	$lon
+	set p(rate)	[expr {$next - $prev}]
 }
 
 # set lat/lon in degrees
 #
 proc set-loc {lat lon} {
-	set-bracket 0.0 [expr {degree($lat)}] [expr {-degree($lon)}]
+	variable p
+
+	set-bracket $p(noon) [expr {degree($lat)}] [expr {-degree($lon)}]
 }
 
-proc set-utc utc {
+#
+# convert utc time to solar
+#
+proc get-solar utc {
 	variable p
 
 	set T	[expr {$utc - $p(epoch)}]
@@ -61,13 +66,15 @@ proc set-utc utc {
 	set S	[expr {[T-to-S $T] + 0.5}]
 	set D	[expr {int(([S-to-T 0.0] + $p(epoch)) / $p(solar))}]
 
-	time-info $utc [expr {$D + $S}]
+	expr {$D + $S}
 }
 
-proc set-solar solar {
+# convert the solar time to utc
+#
+proc get-utc solar {
 	variable p
 
-	set T	[expr {(int($solar) + 0.5) * $p(solar) - $p(epoch)}]
+	set T	[expr {$solar * $p(solar) - $p(epoch)}]
 
 	if {$T < $p(prev) || $T > $p(next)} {
 		set-bracket	$T $p(lat) $p(lon)
@@ -75,34 +82,108 @@ proc set-solar solar {
 
 	set S	[expr {wrap($solar - 0.5)}]
 
-	time-info [expr {round([S-to-T $S] + $p(epoch))}] $solar
+	expr {round([S-to-T $S] + $p(epoch))}
 }
 
-proc time-info {utc solar} {
+#
+# return array of current bracket values
+#
+proc day-info {} {
 	variable p
 	variable day
 
-	set time	[expr {round($solar * $p(solar))}]
+	set t(planet)	$p(planet)
+	set t(msd)	$p(solar)
+	set t(lat)	[expr {deg($p(lat))}]
+	set t(lon)	[expr {-deg($p(lon))}]
+	set t(loc)	[show-loc $p(lat) $p(lon)]
+	set t(tz)	[get-tz]
+	set t(noon)	[expr {round($p(noon) + $p(epoch))}]
+	set t(rate)	$p(rate)
+	set t(seconds)	$day
 
-	dict create\
-		planet	$p(planet)\
-		lat	[expr {deg($p(lat))}]\
-		lon	[expr {-deg($p(lon))}]\
-		day	$p(solar)\
-		rate	[expr {($p(next) - $p(prev)) / $p(solar)}]\
-		noon	[expr {round($p(noon) + $p(epoch))}]\
-		utc	$utc\
-		solar	$solar\
-		sunrise	---\
-		sunset	---\
-		loc	[show-loc $p(lat) $p(lon)]\
-		time	[clock format $time\
-			-format {%I:%M:%S %p}\
-			-timezone +0000]\
-		date	[clock format $time\
-			-format {%Y-%m-%d}\
-			-timezone +0000]
-}	
+	array get t
+}
+
+#
+# find the sunrise/sunset from current bracket
+#
+proc sun-info {} {
+	variable p
+	variable day
+
+	set Hn		[horizon $p(noon)]
+	if {$Hn < 0.0} {
+		set sunrise	"no sun"
+		set sunset	"no sun"
+		set Hp		0.5
+		set Hn		0.5
+	} else {
+		if {$Hn < 0.25} {
+			set Hp	$Hn
+		} else {
+			set Hp	[horizon $p(prev)]
+			set Hn	[horizon $p(next)]
+		}
+
+		if {$Hp > 0.5} {
+			set Hp		0.0
+			set sunrise	"already up"
+		} else {
+			set Hp		[expr {0.5 - $Hp}]
+			set time	[expr {round($Hp * $day)}]
+			set sunrise	[clock format $time\
+						-format {%I:%M:%S}\
+						-timezone +0000
+					]
+		}
+
+		if {$Hn > 0.5} {
+			set Hn		+1.0
+			set sunset	"stays up"
+		} else {
+			set Hn		[expr {0.5 + $Hn}]
+			set time	[expr {round($Hn * $day)}]
+			set sunset	[clock format $time\
+						-format {%I:%M:%S}\
+						-timezone +0000
+					]
+		}
+	}
+
+	set s(sunrise)	$Hp
+	set s(sunset)	$Hn
+	set s(sunsolar)	[expr {($Hn - $Hp) * $day}]
+	set s(sunlight)	[expr {[S-to-T $Hn] - [S-to-T $Hp]}]
+	set s(suntimes)	[list $sunrise $sunset]
+
+	array get s
+}
+
+#
+# return an array of values for the specified utc time
+#
+proc time-info utc {
+	set solar	[get-solar $utc]
+
+	array set t	[day-info]
+
+	set t(solar)	$solar
+	set t(utc)	$utc
+	set t(day)	[expr {int($solar)}]
+
+	set time	[expr {round($solar * $t(seconds))}]
+
+	set t(date)	[clock format $time\
+				-format {%Y-%m-%d}\
+				-timezone +0000
+			]
+	set t(time)	[clock format $time\
+				-format {%I:%M:%S %p}\
+				-timezone +0000
+			]
+	array get t
+}
 
 # convert solar cycle S to T based on current bracket
 # 0.0 = noon of current bracket

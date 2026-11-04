@@ -45,7 +45,7 @@ proc sun-position T {
 proc tilt T {
 	variable p
 
-	set angle	[expr {[orbit-position $T] + rad($p(peri))}]
+	set angle	[orbit-position $T]
 	expr {radian(atan2(cos(rad($p(obl))) * sin($angle), cos($angle)))}
 }
 
@@ -72,9 +72,36 @@ proc orbit-position T {
 	}
 
 # Return True Anomaly
-
-	expr {2.0 * atan2(\
+	expr {rad($p(peri)) +\
+		2.0 * atan2(\
 			sqrt(1.0 + $e) * sin($E / 2.0),\
 			sqrt(1.0 - $e) * cos($E / 2.0))}
 
+}
+
+#
+# calculate intersection of horizon with sun at time T
+#
+proc horizon T {
+	variable p
+
+	set obl		[expr {rad($p(obl))}]
+	set hor		[expr {rad($p(hor))}]
+	set lat		[expr {rad($p(lat))}]
+
+	set angle	[orbit-position $T]
+	set decl	[expr {asin(sin($obl) * sin($angle))}]
+
+	set cross	[expr {(sin($hor) - sin($lat) * sin($decl))\
+				/ (cos($lat) * cos($decl))}]
+
+	# check for no intersection
+	# cross < -1 : always up - return +1.0 (cross = -1 returns 0.5)
+	# cross > +1 : never up  - return -1.0 (cross = +1 returns 0.0)
+
+	if {abs($cross) > 1.0} {
+		return [expr {$cross > 0.0  ? -1.0 : +1.0}]
+	}
+
+	expr {radian(acos($cross))}
 }}
