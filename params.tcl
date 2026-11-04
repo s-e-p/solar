@@ -7,6 +7,10 @@ namespace eval ::solar {
 # or January 1, 2000, 11:58:55.816 UTC (-64.184 seconds)
 #
 # there have been 5 leap seconds in UTC between then and now (2026/2027)
+# it is likely there will be no leap seconds after 2026, however a similar
+# mechanism will be needed to track DUT1 in order to keep the calculation of
+# W correct (which is based on ERA which is defined on UT1, so using UTC as
+# an approximatation of UT1 for now).
 #
 # Unix clock 0 is Jan 1 1970 00:00:00.00 UTC
 #
@@ -34,31 +38,44 @@ namespace eval ::solar {
 	const JCentury	36525.0
 
 # load the parameter array
-# set initial bracket
+# set location and initial bracket
+# default "now" to use the current time
 #
-
-proc set-init-time {
-		{time	now}
-		{lat	+40.11206925115134}
-		{lon	-88.22634304261705}
-		{planet	earth}
+proc set-init-loc {
+		{lat 0.0}
+		{lon 0.0}
+		{utc now}
+		{planet earth}
 	} {
+	variable p
 
-	reset-time	[clock scan $time] $planet
-	set-bracket	0 [expr {degree($lat)}] [expr {-degree($lon)}]\
+	if {$utc eq "now"} {
+		set utc	[clock seconds]
+	}
+
+	reset-time $utc $planet
+	set-bracket 0 [expr {degree($lat)}] [expr {-degree($lon)}]
 }
 
-proc reset-time {utc {planet earth}} {
+#
+# recalculate parameters and reset the parameter array
+#
+proc reset-time {utc planet} {
 	variable p
 
 	array unset p
-	array set p	[params $planet $utc]
+	array set p	[params $utc $planet]
 }
 
 #
-# enter with time = UTC time
+# calculate tables to specified time
+# set epoch to the valid time
+# M and W can be linearly advanced with reasonable accuracy
+# other parameters change so slowly they can be ignored for
+# shorter times.  bracket code recalculates tables whenever
+# the time is more than 10 days different from the table
 #
-proc params {planet time} {
+proc params {time {planet earth}} {
 	variable PARAMS
 	variable day
 	variable TT
@@ -68,7 +85,6 @@ proc params {planet time} {
 # time scale constants
 # in TT seconds, just there for documentation
 # UTC is offset from TAI to UTC, TT is offset from TAI to TT
-
 
 	array set p	$PARAMS($planet)
 	set p(version)	$PARAMS(version)
@@ -101,8 +117,6 @@ proc params {planet time} {
 			/ ($p(solar) + $p(orbit))}]
 	}
 
-# 3. Apply time transformation polynomials
-
 	poly p(e)	$Tc
 	poly p(obl)	$Tc
 	poly p(peri)	$Tc
@@ -114,14 +128,14 @@ proc params {planet time} {
 	set p(M0)	[expr {wrap($p(M0))}]
 	set p(W)	[expr {wrap($p(W))}]
 
-# return the completed array
-
 	array get p
 }
 
 # calculate a polynomial with given x
 # replace the polynomial list with the result
-
+# polynomial coefficients specified lower order first
+# so reverse list to efficiently calculate the result
+#
 proc poly {param x} {
 	upvar $param p
 
