@@ -115,48 +115,63 @@ proc sun-info {} {
 
 	set Hn		[horizon $p(noon)]
 	if {$Hn < 0.0} {
-		set sunrise	"no sun"
-		set sunset	"no sun"
 		set Hp		0.5
+		set sunrise	"no sun"
+		set riseT	$p(noon)
+		set utcrise	"down"
+
 		set Hn		0.5
+		set sunset	"no sun"
+		set setT	$p(noon)
+		set utcset	"down"
 	} else {
 		if {$Hn < 0.25} {
 			set Hp	$Hn
 		} else {
-			set Hp	[horizon $p(prev)]
-			set Hn	[horizon $p(next)]
+			set Hp		[horizon $p(prev)]
+			set Hn		[horizon $p(next)]
 		}
 
 		if {$Hp > 0.5} {
 			set Hp		0.0
 			set sunrise	"already up"
+			set utcrise	"up"
+			set riseT	$p(prev)
 		} else {
+			set riseT	[S-to-T [expr {-$Hp}]]
 			set Hp		[expr {0.5 - $Hp}]
 			set time	[expr {round($Hp * $day)}]
 			set sunrise	[clock format $time\
 						-format {%I:%M:%S}\
 						-timezone +0000
 					]
+			set utcrise	[expr {round($p(epoch) + $riseT)}]
 		}
 
 		if {$Hn > 0.5} {
 			set Hn		+1.0
 			set sunset	"stays up"
+			set utcset	"up"
+			set setT	$p(next)
 		} else {
+			set setT	[S-to-T $Hn]
 			set Hn		[expr {0.5 + $Hn}]
 			set time	[expr {round($Hn * $day)}]
 			set sunset	[clock format $time\
 						-format {%I:%M:%S}\
 						-timezone +0000
 					]
+			set utcset	[expr {round($p(epoch) + $setT)}]
 		}
 	}
 
 	set s(sunrise)	$Hp
 	set s(sunset)	$Hn
 	set s(sunsolar)	[expr {($Hn - $Hp) * $day}]
-	set s(sunlight)	[expr {[S-to-T $Hn] - [S-to-T $Hp]}]
+	set s(sunlight)	[expr {$setT - $riseT}]
 	set s(suntimes)	[list $sunrise $sunset]
+	set s(utc-rise)	$utcrise
+	set s(utc-set)	$utcset
 
 	array get s
 }
