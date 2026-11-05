@@ -1,0 +1,88 @@
+Note:	utc values received can be float
+	utc values provided will always be integer
+	solar values are always float
+	latitude and longitude are float and in degrees
+
+	solar times are a floating point day value with day 0 the same
+	as the Unix epoch (1970-01-01 00:00:00 UTC), with the fractional
+	part representing midnight (0.0), to noon (0.5) to the next
+	midnight (0.0 of the next day).
+
+	solar seconds vary throughout the year - they are adjusted so that
+	each solar day has exactly 24 hours from midnight to midnight.
+
+	utc values are Unix seconds
+
+	day-info and sun-info return information based on the last
+	queried time. time-info (which includes day-info already),
+	get-solar, get-utc, set-loc, and set-init-loc can affect the
+	values.  staying within the same midnight-to-midnight boundary
+	with the same lat/lon will return the same information.
+
+set-init-loc lat lon utc
+	initialize the library with the specified latitude and longitude
+	and an initial utc time value.	lat and lon default to 0.0,
+	utc defaults to "now" (which will get the current time).
+
+set-loc lat lon
+	set the location, which can change the values from day-info
+	and sun-info
+
+get-utc solar
+get-solar utc
+	convert a time value from solar to utc or utc to solar.  Can change
+	the values returned by day-info and sun-info.
+
+time-info utc
+	returns a dict with information specific to a particular instant
+	in time.  The most convenient way of using it is to use
+	`array set t [time-info $utc]`
+
+	This array includes the information from day-info.  Added by
+	time-info:
+
+	solar	the solar time corresponding to the utc time passed in
+	utc	the utc time (the value passed in)
+	date	the formatted solar date (changes at local solar midnight)
+	time	the formatted solar time
+
+	date and time are formatted as {%Y-%m-%d} and {%I:%M:%S %p}
+
+day-info
+	returns information from the last queried time.
+	This array is included in the array returned by time-info.  The fields
+	from day-info are:
+
+	planet	the currently specified planet (earth or mars)
+	msd	mean solar day in seconds - on Earth, 86400.0 seconds
+	lat	currently loaded latitude
+	lon	currently loaded longitude
+	tz	the "natural" timezone based only on the longitude
+	noon	utc time value of solar noon from the last queried time
+	day	current solar day
+	rate	seconds per solar day (varies throughout the year)
+	seconds	seconds per day for display purposes (always 86400.0)
+
+sun-info
+	returns sunrise and sunset information for the last queried time
+
+	sunrise	fraction of a solar day for sunrise [0 .. 0.5] see note
+	sunset	fraction of a solar day for sunset [0.5 .. 1.0] see note
+	sunsolar solar seconds of daylight
+	sunlight utc seconds of daylight
+	suntimes a list with (solar) sunrise and sunset, formatted for display
+	utc-rise utc seconds for sunrise, "up", or "down"
+	utc-set  utc seconds for sunset, "up" or "down"
+
+	note: sunrise/sunset times of 0, 0.5, or 1.0 indicate sun already
+	up, sun never rises, or sun doesn't set respectively.  For utc-rise
+	and utc-set, check explicitly for values "up" or "down".
+	suntimes values will be either formatted (solar) time values or
+	"no sun" "already up" or "stays up"
+
+	sunlight times will show the full solar day when the sun is up all
+	day and will show zero when the sun never rises.
+
+dump	a utility/debugging routine that will print the currently loaded
+	parameter table.  There are also several show- routines available
+	for convenience.
