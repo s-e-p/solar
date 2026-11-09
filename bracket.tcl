@@ -142,7 +142,7 @@ proc sun-info {} {
 			set Hp		[expr {0.5 - $Hp}]
 			set time	[expr {round($Hp * $day)}]
 			set sunrise	[clock format $time\
-						-format {%I:%M:%S}\
+						-format {%I:%M:%S %P}\
 						-timezone +0000
 					]
 			set utcrise	[expr {round($p(epoch) + $riseT)}]
@@ -158,7 +158,7 @@ proc sun-info {} {
 			set Hn		[expr {0.5 + $Hn}]
 			set time	[expr {round($Hn * $day)}]
 			set sunset	[clock format $time\
-						-format {%I:%M:%S}\
+						-format {%I:%M:%S %P}\
 						-timezone +0000
 					]
 			set utcset	[expr {round($p(epoch) + $setT)}]
@@ -193,7 +193,7 @@ proc time-info utc {
 				-timezone +0000
 			]
 	set t(time)	[clock format $time\
-				-format {%I:%M:%S %p}\
+				-format {%I:%M:%S %P}\
 				-timezone +0000
 			]
 	array get t
