@@ -185,7 +185,7 @@ proc time-info utc {
 	array set t	[day-info]
 
 	set t(solar)	$solar
-	set t(utc)	$utc
+	set t(utc)	[expr {round($utc)}]
 	set time	[expr {round($solar * $t(seconds))}]
 
 	set t(date)	[clock format $time\
