@@ -2,7 +2,7 @@
 # add cycle functions to simplify the calculations
 # used in the parameter table, so load them first
 #
-namespace eval ::tcl::mathfunc {
+namespace eval ::solar::tcl::mathfunc {
 
 const 2pi	[expr 8 * atan(1)]
 const deg	360.0
