@@ -7,7 +7,7 @@ if {[info command ::const] eq {}} {
 package require solar
 package require Tk
 
-namespace eval display {
+namespace eval ::display {
 	namespace path ::solar
 
 	const label	38
@@ -37,10 +37,11 @@ proc hours seconds {
 	format {%d:%.2d:%.2d} $hh $mm $ss
 }
 
-proc set-time {} {
+proc show-time {} {
 	variable t
 	variable time
 	variable local
+	variable mean
 	variable utc
 	variable day
 	variable lat
@@ -51,16 +52,20 @@ proc set-time {} {
 		-format {%a %D %I:%M:%S %P %Z}
 	]]
 
+	set mean [format {%-35s} [clock format $t(utc) -timezone $t(tz)\
+		-format {SMT %D %I:%M:%S %P %Z}
+	]]
+
 	set utc [format {%-35s} [clock format $t(utc) -timezone UTC\
 		-format {%Z %Y-%m-%d %H:%M:%S}
 	]]
 
 	if {$day != $t(day) || $lat != $t(lat) || $lon != $t(lon)} {
-		set-day
+		show-day
 	}
 }
 
-proc set-day {} {
+proc show-day {} {
 	variable t
 	variable date
 	variable loc
@@ -79,7 +84,7 @@ proc set-day {} {
 	"[clock format $t(noon)\
 		-format {Local %H:%M:%S %P %Z}
 	]\n[clock format $t(noon) -timezone $t(tz)\
-		-format {Mean  %H:%M:%S %P %Z}
+		-format {SMT   %H:%M:%S %P %Z}
 	]\nHours [hours $t(rate)]"
 	set sun [suntimes {*}$s(suntimes) $s(utc-rise) $s(utc-set)\
 		$s(sunlight)
@@ -123,7 +128,7 @@ proc tick {} {
 
 	set time [expr {[clock milliseconds] / 1000.0}]
 	array set t [::solar::time-info $time]
-	set-time
+	show-time
 
 	set solar [expr {$t(solar) * $t(rate)}]
 	set tick [expr {1.5 - fmod($time, 1.0)}]
@@ -143,8 +148,8 @@ apply {{{lat +40.11206925115134} {lon -88.22634304261705}} {
 	set-init-loc $lat $lon
 	array set t [time-info [clock seconds]]
 
-	set-day
-	set-time
+	show-day
+	show-time
 
 	font create Solar {*}[font configure TkFixedFont]\
 		-size $text
@@ -162,6 +167,8 @@ apply {{{lat +40.11206925115134} {lon -88.22634304261705}} {
 		-font Solar -justify left
 	label .main.local -textvariable ::display::local\
 		-font Solar -justify left
+	label .main.mean -textvariable ::display::mean\
+		-font Solar -justify left
 	label .main.utc -textvariable ::display::utc\
 		-font Solar -justify left
 	label .main.noon -textvariable ::display::noon\
@@ -176,7 +183,7 @@ apply {{{lat +40.11206925115134} {lon -88.22634304261705}} {
 	pack .main.lnoon .main.noon -side top
 	pack .main.lsun .main.sun -side top
 	pack .main.llocal -side top
-	pack .main.local .main.utc -side top
+	pack .main.local .main.mean .main.utc -side top
 	pack .main.loc
 
 	pack .main -fill both -expand true
