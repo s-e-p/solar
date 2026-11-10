@@ -1,9 +1,3 @@
-lappend ::auto_path [file dirname [info script]]
-
-if {[info command ::const] eq {}} {
-	proc ::const {name value} {uplevel set $name $value}
-}
-
 package require solar
 package require Tk
 
@@ -193,8 +187,21 @@ apply {{{lat +40.11206925115134} {lon -88.22634304261705}} {
 
 	update
 
-	set width [winfo width .main]
-	set height [winfo height .main]
+	set width	[winfo width .main]
+	set height	[winfo height .main]
+
+	set w		[winfo screenwidth .]
+	set h		[winfo screenheight .]
+
+	if {$w > $h} {
+		set w	[expr {int($w / 3.0)}]
+		set h	[expr {int($h * 2.0 / 3.0)}]
+	} {
+		set w	[expr {int($w * 2.0 / 3.0)}]
+		set h	[expr {int($h * 2.0 / 3.0)}]
+	}
+
+	wm geometry . ${w}x${h}
 
 	bind .main <Configure> {::display::scale %w %h}
 	tick
