@@ -146,9 +146,10 @@ apply {{{lat +40.11206925115134} {lon -88.22634304261705}} {
 	set-day
 	set-time
 
-	font create Solar -family monospace -size [expr {$text}]
-	font create Label -family monospace -size [expr {$label}]\
-		-weight bold
+	font create Solar {*}[font configure TkFixedFont]\
+		-size $text
+	font create Label {*}[font configure TkHeadingFont]\
+		-size $label -weight bold
 
 	frame .main
 	label .main.date -textvariable ::display::date\
