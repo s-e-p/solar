@@ -1,8 +1,18 @@
+lappend ::auto_path [file dirname [info script]]
+
+if {[info command ::const] eq {}} {
+	proc ::const {name value} {uplevel set $name $value}
+}
+
 package require solar
 package require Tk
 
 namespace eval display {
 	namespace path ::solar
+
+	const label	38
+	const text	32
+	variable scale	1.0
 
 proc suntimes {rise set sunrise sunset sunlight} {
 	if {[string is integer $sunrise]} {
@@ -77,30 +87,35 @@ proc set-day {} {
 	set loc $t(loc)
 }
 
-proc scale {window w h} {
+proc scale {w h} {
+	variable label
+	variable text
 	variable width
 	variable height
 	variable scale
-	variable size
 
-	if {$window ne "."} return
 	if {$w == $width && $h == $height} return
-	set width $w
-	set height $h
 
-	set rw [winfo reqwidth .]
-	set rh [winfo reqheight .]
+	set width	$w
+	set height	$h
 
-	set scalew [expr {$scale * $w / $rw}]
-	set scaleh [expr {$scale * $h / $rh}]
-	set scale [expr {min($scalew, $scaleh)}]
-	set new [expr {int(36 * $scale)}]
-	if {$new != $size} {
-		set size $new
-		set lsize [expr {int(38 * $scale)}]
-		font configure Solar -size $size
-		font configure Label -size $lsize
-	}
+	set rw		[expr {[winfo reqwidth .main] / $scale}]
+	set rh		[expr {[winfo reqheight .main] / $scale}]
+
+	set size	[expr {min($w / $rw, $h / $rh)}]
+
+	set tsize	[expr {int($size * $text)}]
+	set lsize	[expr {int($size * $label)}]
+
+	if {$lsize < 10 || $lsize > 100} return
+
+	if {$lsize == int($scale * $label) ||
+		$tsize == int($scale * $text)} return
+
+	set scale	$size
+
+	font configure Solar -size $tsize
+	font configure Label -size $lsize
 }
 
 proc tick {} {
@@ -120,8 +135,8 @@ proc tick {} {
 
 apply {{{lat +40.11206925115134} {lon -88.22634304261705}} {
 	variable t
-	variable scale	1.0
-	variable size	36
+	variable text
+	variable label
 	variable width
 	variable height
 
@@ -131,45 +146,48 @@ apply {{{lat +40.11206925115134} {lon -88.22634304261705}} {
 	set-day
 	set-time
 
-	font create Solar -family monospace -size $size
-	font create Label -family monospace -size [expr {$size + 2}]\
+	font create Solar -family monospace -size [expr {$text}]
+	font create Label -family monospace -size [expr {$label}]\
 		-weight bold
 
-	label .date -textvariable ::display::date\
+	frame .main
+	label .main.date -textvariable ::display::date\
 		-font Solar -justify left
-	label .time -textvariable ::display::time\
+	label .main.time -textvariable ::display::time\
 		-font Solar -justify left
-	label .sun -textvariable ::display::sun\
+	label .main.sun -textvariable ::display::sun\
 		-font Solar -justify left
-	label .loc -textvariable ::display::loc\
+	label .main.loc -textvariable ::display::loc\
 		-font Solar -justify left
-	label .local -textvariable ::display::local\
+	label .main.local -textvariable ::display::local\
 		-font Solar -justify left
-	label .utc -textvariable ::display::utc\
+	label .main.utc -textvariable ::display::utc\
 		-font Solar -justify left
-	label .noon -textvariable ::display::noon\
+	label .main.noon -textvariable ::display::noon\
 		-font Solar -justify left
 
-	label .ltime -text "Solar time" -font Label
-	label .lnoon -text "\nSolar noon" -font Label
-	label .lsun -text "\nSunrise    |   Sunset  " -font Label
-	label .llocal -text "\nStandard time" -font Label
+	label .main.ltime -text "Solar time" -font Label
+	label .main.lnoon -text "\nSolar noon" -font Label
+	label .main.lsun -text "\nSunrise    |   Sunset  " -font Label
+	label .main.llocal -text "\nStandard time" -font Label
 
-	pack .ltime .date .time -side top
-	pack .lnoon .noon -side top
-	pack .lsun .sun -side top
-	pack .llocal -side top
-	pack .local .utc -side top
-	pack .loc
+	pack .main.ltime .main.date .main.time -side top
+	pack .main.lnoon .main.noon -side top
+	pack .main.lsun .main.sun -side top
+	pack .main.llocal -side top
+	pack .main.local .main.utc -side top
+	pack .main.loc
+
+	pack .main -fill both -expand true
 
 	tk appname solar
 	wm title . {Solar Time}
 
 	update
 
-	set width [winfo reqwidth .]
-	set height [winfo reqheight .]
+	set width [winfo width .main]
+	set height [winfo height .main]
 
-	bind . <Configure> {::display::scale %W %w %h}
+	bind .main <Configure> {::display::scale %w %h}
 	tick
 } ::display} {*}$::argv
