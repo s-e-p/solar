@@ -3,7 +3,7 @@ apply {{outfile infile main dir args} {
 	set files [list $main main.tcl]
 
 	foreach file $args {
-		lappend files $file [file join solar $file]
+		lappend files $file [file join $dir $file]
 	}
 
 	zipfs lmkimg $outfile $files "" $infile
