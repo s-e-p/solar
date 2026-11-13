@@ -23,7 +23,7 @@ apply {{{lat	+40.11206925115134}
 	puts [format {%-6s %s} $t(planet) $t(loc)]
 
 	puts [format {orbit: %3.9f  SSL: %3.9f}\
-		[expr {radian([orbit-position 0]) * 360}]\
+		[expr {deg(radian([orbit-position 0]))}]\
 		[expr {[sun-position 0] * 360}]
 	]
 
