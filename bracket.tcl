@@ -29,7 +29,7 @@ proc set-bracket {T lat lon} {
 	set S		[expr {wrap($lon - $ssl)}]
 
 	# find noon and the previous and next midnight
-	lassign [get-time $S $T $ssl $p(solar)]		noon rate
+	lassign [get-time $S $T $ssl $p(msd)]		noon rate
 	lassign [get-time -0.5 $noon $lon $rate]	prev
 	lassign [get-time +0.5 $noon $lon $rate]	next
 
@@ -64,7 +64,7 @@ proc get-solar utc {
 	}
 
 	set S	[expr {[T-to-S $T] + 0.5}]
-	set D	[expr {int(([S-to-T 0.0] + $p(epoch)) / $p(solar))}]
+	set D	[expr {int(([S-to-T 0.0] + $p(epoch)) / $p(msd))}]
 
 	expr {$D + $S}
 }
@@ -74,7 +74,7 @@ proc get-solar utc {
 proc get-utc solar {
 	variable p
 
-	set T	[expr {$solar * $p(solar) - $p(epoch)}]
+	set T	[expr {$solar * $p(msd) - $p(epoch)}]
 
 	if {$T < $p(prev) || $T > $p(next)} {
 		set-bracket	$T $p(lat) $p(lon)
@@ -85,6 +85,18 @@ proc get-utc solar {
 	expr {round([S-to-T $S] + $p(epoch))}
 }
 
+# calculate utc seconds for offset of solar seconds
+# only works for relatively small number of seconds
+# (i.e. stays mostly within the bracket)
+# this will be approximately $seconds * $t(rate) / $t(msd)
+#
+proc solar-seconds {solar seconds} {
+	variable day
+
+	set S [expr {fmod($solar, 1.0) - 0.5}]
+	expr {[S-to-T [expr {$S + $seconds / $day}]] - [S-to-T $S]}
+}
+
 #
 # return array of current bracket values
 #
@@ -93,13 +105,13 @@ proc day-info {} {
 	variable day
 
 	set t(planet)	$p(planet)
-	set t(msd)	$p(solar)
+	set t(msd)	$p(msd)
 	set t(lat)	[expr {deg($p(lat))}]
 	set t(lon)	[expr {-deg($p(lon))}]
 	set t(loc)	[show-loc $p(lat) $p(lon)]
 	set t(tz)	[get-tz]
 	set t(noon)	[expr {round($p(noon) + $p(epoch))}]
-	set t(day)	[expr {int(($p(noon) + $p(epoch)) / $p(solar))}]
+	set t(day)	[expr {int(($p(noon) + $p(epoch)) / $p(msd))}]
 	set t(rate)	$p(rate)
 	set t(seconds)	$day
 
@@ -185,8 +197,8 @@ proc time-info utc {
 	array set t	[day-info]
 
 	set t(solar)	$solar
-	set t(utc)	[expr {round($utc)}]
-	set time	[expr {round($solar * $t(seconds))}]
+	set t(utc)	[expr {int($utc)}]
+	set time	[expr {int($solar * $t(seconds))}]
 
 	set t(date)	[clock format $time\
 				-format {%Y-%m-%d}\

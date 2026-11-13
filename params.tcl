@@ -109,12 +109,12 @@ proc params {time {planet earth}} {
 
 	if {[info exists p(sidereal)]} {
 		# calculate solar from sidereal
-		set p(solar) [expr {$p(sidereal) * $p(orbit)\
+		set p(msd) [expr {$p(sidereal) * $p(orbit)\
 			/ ($p(orbit) - $p(sidereal))}]
 	} else {
 		# else calculate sidereal from solar
-		set p(sidereal) [expr {$p(solar) * $p(orbit)\
-			/ ($p(solar) + $p(orbit))}]
+		set p(sidereal) [expr {$p(msd) * $p(orbit)\
+			/ ($p(msd) + $p(orbit))}]
 	}
 
 	poly p(e)	$Tc

@@ -7,7 +7,7 @@ apply {args {
 
 namespace eval ::solar {
 	namespace export set-init-loc set-loc dump
-	namespace export get-utc get-solar
+	namespace export get-utc get-solar solar-seconds
 	namespace export day-info sun-info time-info
 }
 

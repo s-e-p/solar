@@ -71,8 +71,9 @@ proc show-day {} {
 
 	array set s [sun-info]
 
-	set day $t(noon)
+	set day $t(day)
 	set lat $t(lat)
+	set lon $t(lon)
 	set date $t(date)
 	set noon\
 	"[clock format $t(noon)\
@@ -120,16 +121,34 @@ proc scale {w h} {
 proc tick {} {
 	variable t
 
-	set time [expr {[clock milliseconds] / 1000.0}]
-	array set t [::solar::time-info $time]
+	set time [clock milliseconds]
+	array set t [time-info [expr {$time / 1000.0}]]
 	show-time
 
-	set solar [expr {$t(solar) * $t(rate)}]
-	set tick [expr {1.5 - fmod($time, 1.0)}]
-	set tock [expr {1.5 - fmod($solar, 1.0)}]
-	set msec [expr {int(1000.0 *\
-		min($tick, $tock))}]
+	# calculate next utc second offset
+	set tick	[expr {1500 - ($time % 1000)}]
+
+	# calculate next solar second offset
+	set solar	[expr {fmod($t(solar), 1.0)}]
+	set seconds	[expr {1.5 - fmod($solar * $t(seconds), 1.0)}]
+	set next	[solar-seconds $solar $seconds]
+	set tock	[expr {int($next * 1000.0)}]
+
+	# delay until whichever is next
+	set msec	[expr {min($tick, $tock)}]
 	after $msec ::display::tick
+
+	puts [format "u: %6.5f %s.%03d\ns: %6.5f %s.%05d\nm:\
+			%4d %4d %4d\n"\
+		[expr {fmod($time / 1000.0, 60.0)}]\
+		[clock format $t(utc) -format {%H:%M:%S}]\
+		[expr {$time % 1000}]\
+		[expr {fmod($solar * $t(seconds), 60.0)}]\
+		[clock format [expr {int($t(solar) * $t(seconds))}]\
+			-format {%H:%M:%S} -timezone +0000]\
+		[expr {int(fmod($t(solar) * $t(seconds), 1.0) * 100000.0)}]\
+		$tick $tock $msec
+	]
 }}
 
 apply {{{lat +40.11206925115134} {lon -88.22634304261705}} {
@@ -205,4 +224,8 @@ apply {{{lat +40.11206925115134} {lon -88.22634304261705}} {
 
 	bind .main <Configure> {::display::scale %w %h}
 	tick
+	tkwait window .
+	puts "main window closed"
+	foreach task [after info] {after cancel $task}
 } ::display} {*}$::argv
+

@@ -33,6 +33,15 @@ get-solar utc
 	convert a time value from solar to utc or utc to solar.  Can change
 	the values returned by day-info and sun-info.
 
+solar-seconds solar seconds
+	calculate the number of utc seconds for solar seconds at a given
+	solar fraction.  seconds should be small, staying (mostly) within the
+	last queried time period.
+
+	solar can be a full solar time or just the fractional part, the
+	day number is not verified, and does not change the last queried
+	time period.
+
 time-info utc
 	returns a dict with information specific to a particular instant
 	in time.  The most convenient way of using it is to use
@@ -50,8 +59,8 @@ time-info utc
 
 day-info
 	returns information from the last queried time.
-	This array is included in the array returned by time-info.  The fields
-	from day-info are:
+	This array is included in the array returned by time-info.
+	The fields from day-info are:
 
 	planet	the currently specified planet (earth or mars)
 	msd	mean solar day in seconds - on Earth, 86400.0 seconds

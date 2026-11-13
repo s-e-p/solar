@@ -64,13 +64,13 @@ proc show-days v {
 	variable p
 	variable day
 
-	if {$p(solar) != $day} {
+	if {$p(msd) != $day} {
 		format {%.3f (%.3f)}\
-			[expr {$v / $p(solar)}]\
+			[expr {$v / $p(msd)}]\
 			[expr {$v / $day}
 		]
 	} {
-		format {%.3f} [expr {$v / $p(solar)}]
+		format {%.3f} [expr {$v / $p(msd)}]
 	}
 }
 
