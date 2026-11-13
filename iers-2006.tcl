@@ -19,7 +19,7 @@ namespace eval ::solar {
 	version	{2024-03-15 IERS-2006}\
 	earth	[dict create\
 		epoch	${J2000.0}\
-		solar	$day\
+		msd	$day\
 		orbit	31556925.2\
 		e	[list\
 				 0.01670863\
