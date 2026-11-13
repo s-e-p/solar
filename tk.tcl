@@ -126,11 +126,11 @@ proc tick {} {
 	show-time
 
 	# calculate next utc second offset
-	set tick	[expr {1500 - ($time % 1000)}]
+	set tick	[expr {1050 - ($time % 1000)}]
 
 	# calculate next solar second offset
 	set solar	[expr {fmod($t(solar), 1.0)}]
-	set seconds	[expr {1.5 - fmod($solar * $t(seconds), 1.0)}]
+	set seconds	[expr {1.05 - fmod($solar * $t(seconds), 1.0)}]
 	set next	[solar-seconds $solar $seconds]
 	set tock	[expr {int($next * 1000.0)}]
 
@@ -181,11 +181,11 @@ apply {{{lat +40.11206925115134} {lon -88.22634304261705}} {
 	label .main.llocal -text "\nStandard time" -font Label
 
 	pack .main.ltime .main.date .main.time -side top
-	pack .main.lnoon .main.noon -side top
-	pack .main.lsun .main.sun -side top
 	pack .main.llocal -side top
 	pack .main.local .main.mean .main.utc -side top
-	pack .main.loc
+	pack .main.lnoon .main.noon -side top
+	pack .main.lsun .main.sun -side top
+	pack .main.loc -side bottom
 
 	pack .main -fill both -expand true
 
@@ -209,11 +209,9 @@ apply {{{lat +40.11206925115134} {lon -88.22634304261705}} {
 	}
 
 	wm geometry . ${w}x${h}
-
 	bind .main <Configure> {::display::scale %w %h}
+
 	tick
 	tkwait window .
-	puts "main window closed"
 	foreach task [after info] {after cancel $task}
 } ::display} {*}$::argv
-
