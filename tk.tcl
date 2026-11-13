@@ -137,18 +137,6 @@ proc tick {} {
 	# delay until whichever is next
 	set msec	[expr {min($tick, $tock)}]
 	after $msec ::display::tick
-
-	puts [format "u: %6.5f %s.%03d\ns: %6.5f %s.%05d\nm:\
-			%4d %4d %4d\n"\
-		[expr {fmod($time / 1000.0, 60.0)}]\
-		[clock format $t(utc) -format {%H:%M:%S}]\
-		[expr {$time % 1000}]\
-		[expr {fmod($solar * $t(seconds), 60.0)}]\
-		[clock format [expr {int($t(solar) * $t(seconds))}]\
-			-format {%H:%M:%S} -timezone +0000]\
-		[expr {int(fmod($t(solar) * $t(seconds), 1.0) * 100000.0)}]\
-		$tick $tock $msec
-	]
 }}
 
 apply {{{lat +40.11206925115134} {lon -88.22634304261705}} {
