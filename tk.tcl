@@ -87,11 +87,13 @@ proc show-day {} {
 	set loc $t(loc)
 }
 
-proc scale {w h} {
+proc set-scale {w h} {
 	variable label
 	variable text
 	variable width
 	variable height
+	variable reqw
+	variable reqh
 	variable scale
 
 	if {$w == $width && $h == $height} return
@@ -99,23 +101,24 @@ proc scale {w h} {
 	set width	$w
 	set height	$h
 
-	set rw		[expr {[winfo reqwidth .main] / $scale}]
-	set rh		[expr {[winfo reqheight .main] / $scale}]
+	set reqw	[expr {1.05 * [winfo reqwidth .main]}]
+	set reqh	[expr {1.20 * [winfo reqheight .main]}]
 
-	set size	[expr {min($w / $rw, $h / $rh)}]
+	set s	[expr {$scale * min($w / $reqw, $h / $reqh)}]
 
-	set tsize	[expr {int($size * $text)}]
-	set lsize	[expr {int($size * $label)}]
+	if {$s == $scale} return
 
-	if {$lsize < 10 || $lsize > 100} return
+	set tsize	[expr {int($s * $text)}]
+	set lsize	[expr {int($s * $label)}]
 
-	if {$lsize == int($scale * $label) ||
-		$tsize == int($scale * $text)} return
+	if {$lsize < 6 || $lsize > 100} return
 
-	set scale	$size
+	if {$tsize != int($scale * $text) || $lsize != int($scale * $label)} {
+		font configure Label -size $lsize
+		font configure Solar -size $tsize
 
-	font configure Solar -size $tsize
-	font configure Label -size $lsize
+		set scale $s
+	}
 }
 
 proc tick {} {
@@ -145,6 +148,9 @@ apply {{{lat +40.11206925115134} {lon -88.22634304261705}} {
 	variable label
 	variable width
 	variable height
+	variable reqw
+	variable reqh
+	variable scale
 
 	set-init-loc $lat $lon
 	array set t [time-info [clock seconds]]
@@ -152,10 +158,15 @@ apply {{{lat +40.11206925115134} {lon -88.22634304261705}} {
 	show-day
 	show-time
 
+	tk appname solar
+	wm title . {Solar Time}
+	wm forget .
+
 	font create Solar {*}[font configure TkFixedFont]\
 		-size $text
 	font create Label {*}[font configure TkHeadingFont]\
 		-size $label -weight bold
+
 
 	frame .main
 	label .main.date -textvariable ::display::date\
@@ -189,29 +200,28 @@ apply {{{lat +40.11206925115134} {lon -88.22634304261705}} {
 
 	pack .main -fill both -expand true
 
-	tk appname solar
-	wm title . {Solar Time}
+	update
+
+	set width	0
+	set height	0
+
+	set w		[expr {([winfo screenwidth .] - 100) * .95}]
+	set h		[expr {([winfo screenheight .] - 100) * .95}]
+
+	set-scale $w $h
+
+	set s		[expr {min($width / $reqw, $height / $reqh)}]
+
+	set width	[expr {int($s * $reqw)}]
+	set height	[expr {int($s * $reqh)}]
+
+	wm manage .
+	wm geometry . ${width}x${height}
 
 	update
 
-	set width	[winfo width .main]
-	set height	[winfo height .main]
-
-	set w		[winfo screenwidth .]
-	set h		[winfo screenheight .]
-
-	if {$w > $h} {
-		set w	[expr {int($w / 3.0)}]
-		set h	[expr {int($h * 2.0 / 3.0)}]
-	} {
-		set w	[expr {int($w * 2.0 / 3.0)}]
-		set h	[expr {int($h * 2.0 / 3.0)}]
-	}
-
-	wm geometry . ${w}x${h}
-	bind .main <Configure> {::display::scale %w %h}
+	bind .main <Configure> {::display::set-scale %w %h}
+	bind .main <Destroy> {foreach task [after info] {after cancel $task}}
 
 	tick
-	tkwait window .
-	foreach task [after info] {after cancel $task}
 } ::display} {*}$::argv
