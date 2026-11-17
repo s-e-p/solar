@@ -47,9 +47,6 @@ time-info utc
 	in time.  The most convenient way of using it is to use
 	`array set t [time-info $utc]`
 
-	This array includes the information from day-info.  Added by
-	time-info:
-
 	solar	the solar time corresponding to the utc time passed in
 	utc	the utc time (the value passed in)
 	date	the formatted solar date (changes at local solar midnight)

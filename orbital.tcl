@@ -7,11 +7,13 @@ namespace eval ::solar {
 # solve for T: sun-position(T) == S
 # set S to wrap($time - $lon) to find the time when
 # the solar time at longitude $lon is $time [-0.5 .. +0.5]
+# return time declination rate
 
 proc get-time {S noon lon rate} {
 	for {set i 0} {$i < 10} {incr i} {
 		set T		[expr {$noon + $S * $rate}]
-		set ssl		[sun-position $T]
+		set orbit	[orbit-position $T]
+		set ssl		[sun-position $orbit $T]
 		set delta	[expr {wrap($S + $lon - $ssl)}]
 		set adjust	[expr {$S - $delta}]
 
@@ -23,28 +25,65 @@ proc get-time {S noon lon rate} {
 		set lon		$ssl
 	}
 
-	list	$T $rate
+	list	$T [height $orbit] $rate
 }
 
-#
-# calculate the sun's location at UTC delta (from epoch)
+# calculate the sun's location at T
 # return the Sub-Solar Location in cycles
 #
+proc sun-position {orbit T} {
+	expr {wrap([rotation $T] - [tilt $orbit])}
+}
 
-proc sun-position T {
+proc rotation T {
 	variable p
 
-	expr {wrap(($p(W) + $T / $p(sidereal)) - [tilt $T])}
+	expr {wrap($p(W) + $T / $p(sidereal))}
 }
 
 # factor in the tilt to adjust the orbital position
+# angle is in radians
 # return the result in cycles
 #
-proc tilt T {
+proc tilt angle {
 	variable p
 
-	set angle	[orbit-position $T]
 	expr {radian(atan2(cos(rad($p(obl))) * sin($angle), cos($angle)))}
+}
+
+# determine sun declination at given orbital position
+# return as radians
+#
+proc height angle {
+	variable p
+
+	set obl		[expr {rad($p(obl))}]
+
+	expr {asin(sin($obl) * sin($angle))}
+}
+
+#
+# calculate intersection of horizon with sun at time T
+# arguments in radians
+#
+# return cycles
+#
+proc horizon {decl} {
+	variable p
+
+	set cross	[expr {(sin($p(hor)) - sin($p(lat))\
+				* sin($decl))\
+				/ (cos($p(lat)) * cos($decl))}]
+
+	# check for no intersection
+	# cross < -1 : always up - return +1.0 (cross = -1 returns 0.5)
+	# cross > +1 : never up  - return -1.0 (cross = +1 returns 0.0)
+
+	if {abs($cross) > 1.0} {
+		return [expr {$cross > 0.0  ? -1.0 : +1.0}]
+	}
+
+	expr {radian(acos($cross))}
 }
 
 # calculate orbital position at time T
@@ -75,31 +114,4 @@ proc orbit-position T {
 			sqrt(1.0 + $e) * sin($E / 2.0),\
 			sqrt(1.0 - $e) * cos($E / 2.0))}
 
-}
-
-#
-# calculate intersection of horizon with sun at time T
-#
-proc horizon T {
-	variable p
-
-	set obl		[expr {rad($p(obl))}]
-	set hor		[expr {rad($p(hor))}]
-	set lat		[expr {rad($p(lat))}]
-
-	set angle	[orbit-position $T]
-	set decl	[expr {asin(sin($obl) * sin($angle))}]
-
-	set cross	[expr {(sin($hor) - sin($lat) * sin($decl))\
-				/ (cos($lat) * cos($decl))}]
-
-	# check for no intersection
-	# cross < -1 : always up - return +1.0 (cross = -1 returns 0.5)
-	# cross > +1 : never up  - return -1.0 (cross = +1 returns 0.0)
-
-	if {abs($cross) > 1.0} {
-		return [expr {$cross > 0.0  ? -1.0 : +1.0}]
-	}
-
-	expr {radian(acos($cross))}
 }}

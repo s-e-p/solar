@@ -18,13 +18,15 @@ apply {{{lat	+40.11206925115134}
 	puts [clock format $p(epoch) -timezone UTC]
 
 	array set t [time-info $p(epoch)]
-	array set s [sun-info]
+	array set t [day-info]
+	array set t [sun-info]
 
 	puts [format {%-6s %s} $t(planet) $t(loc)]
 
+	set orbit $p(orbit)
 	puts [format {orbit: %3.9f  SSL: %3.9f}\
-		[expr {deg(radian([orbit-position 0]))}]\
-		[expr {[sun-position 0] * 360}]
+		[expr {deg(radian($orbit))}]\
+		[expr {[sun-position $orbit 0] * 360}]
 	]
 
 	puts [format {current solar day: %s}\
@@ -35,16 +37,16 @@ apply {{{lat	+40.11206925115134}
 
 	puts "current solar time   $t(date) $t(time)"
 	puts "local solar noon    [clock format $t(noon)]"
-	puts "sunrise/sunset      $s(suntimes)"
+	puts "sunrise/sunset      $t(suntimes)"
 
-	set sunrise	[get-utc [expr {$t(day) + $s(sunrise)}]]
-	set sunset	[get-utc [expr {$t(day) + $s(sunset)}]]
-	set daylight	[expr {($s(sunset) - $s(sunrise)) * $t(seconds)}]
+	set sunrise	[get-utc [expr {$t(day) + $t(sunrise)}]]
+	set sunset	[get-utc [expr {$t(day) + $t(sunset)}]]
+	set daylight	[expr {($t(sunset) - $t(sunrise)) * $t(seconds)}]
 
 	puts "sunrise             [clock format [expr {round($sunrise)}]]"
 	puts "sunset              [clock format [expr {round($sunset)}]]"
 	puts "daylight (solar)    [show-time $daylight]"
-	puts "daylight (utc)      [show-time $s(sunlight)]"
+	puts "daylight (utc)      [show-time $t(sunlight)]"
 
 	puts "noon (solar mean)  \
 		[clock format $t(noon) -timezone $t(tz)]"

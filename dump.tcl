@@ -75,10 +75,16 @@ proc show-days v {
 }
 
 # display lat/lon pair in standard format
+# uses values as stored in the table
+# lat is in radians, lon is in inverse cycles
+#
 proc show-loc {lat lon} {
 	const round	[expr {60.0 * 60.0 * 100.0}]
 
-	set ddd	[expr {round(abs($lat * $round * 360.0)) / $round}]
+	set lat	[expr {cyc(radian($lat))}]
+	set lon [expr {cyc($lon)}]
+
+	set ddd	[expr {round(abs($lat * $round)) / $round}]
 	set mm	[expr {fmod($ddd, 1.0) * 60.0}]
 	set ss	[expr {fmod($mm,  1.0) * 60.0}]
 	set dir	[expr {$ddd == 0 ? " " : $lat < 0 ? "S" : "N"}]
@@ -86,7 +92,7 @@ proc show-loc {lat lon} {
 	set mm	[expr {int($mm)}]
 	set lat	[format {%3d° %02d' %05.2f" %s} $ddd $mm $ss $dir]
 
-	set ddd	[expr {round(abs($lon * $round * 360.0)) / $round}]
+	set ddd	[expr {round(abs($lon * $round)) / $round}]
 	set mm	[expr {fmod($ddd, 1.0) * 60.0}]
 	set ss	[expr {fmod($mm,  1.0) * 60.0}]
 	set dir	[expr {$ddd == 0 ? " " : $lon > 0 ? "W" : "E"}]

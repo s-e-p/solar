@@ -54,7 +54,7 @@ proc set-init-loc {
 	}
 
 	reset-time $utc $planet
-	set-bracket 0 [expr {degree($lat)}] [expr {-degree($lon)}]
+	set-bracket 0 [expr {rad(degree($lat))}] [expr {-degree($lon)}]
 }
 
 #

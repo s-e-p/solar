@@ -69,6 +69,7 @@ proc show-day {} {
 	variable lat
 	variable lon
 
+	array set t [day-info]
 	array set s [sun-info]
 
 	set day $t(day)
@@ -113,7 +114,8 @@ proc set-scale {w h} {
 
 	if {$lsize < 6 || $lsize > 100} return
 
-	if {$tsize != int($scale * $text) || $lsize != int($scale * $label)} {
+	if {$tsize != int($scale * $text)
+			|| $lsize != int($scale * $label)} {
 		font configure Label -size $lsize
 		font configure Solar -size $tsize
 
